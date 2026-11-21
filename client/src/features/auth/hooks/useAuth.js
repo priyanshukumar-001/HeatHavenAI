@@ -51,10 +51,10 @@ export function useAuth() {
 
       if (res && res.user) {
         setCurrentUser(res.user);
-        return res.user;
+        return { ok: true, user: res.user };
       }
     } catch {
-      // Offline fallback login so workers never get blocked
+      // Offline fallback login for gig workers
       const offlineUser = {
         id: `local_${Date.now()}`,
         name: name.trim(),
@@ -65,14 +65,15 @@ export function useAuth() {
         badge: 'Relief Scout'
       };
       setCurrentUser(offlineUser);
-      return offlineUser;
+      return { ok: true, user: offlineUser };
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   /**
-   * Google Sign-In via Firebase Authentication with graceful fallback
+   * Real Google Sign-In via Firebase Authentication
+   * STRICT: Connects directly to user's real Chrome Google account without fake fallbacks.
    */
   const loginWithGoogle = useCallback(async (role = 'commuter') => {
     setIsLoading(true);
@@ -80,25 +81,8 @@ export function useAuth() {
     try {
       const result = await signInWithGoogleFirebase();
       if (!result.ok) {
-        if (result.errorCode === 'auth/unauthorized-domain' || !isFirebaseConfigured) {
-          // Provide clean simulated fallback so demo is NEVER blocked
-          const fallbackUser = {
-            id: `google_local_${Date.now()}`,
-            name: 'Google User (Verified Contributor)',
-            phoneOrEmail: 'verified.relief.worker@gmail.com',
-            email: 'verified.relief.worker@gmail.com',
-            photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
-            role,
-            provider: 'google',
-            contributionsCount: 5,
-            savedSpots: [],
-            badge: 'Verified Google Contributor'
-          };
-          setCurrentUser(fallbackUser);
-          return fallbackUser;
-        }
-        setError(result.error || 'Google Sign-In failed');
-        return null;
+        setError(result.error);
+        return { ok: false, error: result.error, errorCode: result.errorCode };
       }
 
       const googleUser = {
@@ -106,7 +90,7 @@ export function useAuth() {
         role
       };
 
-      // Also register or sync with backend if available
+      // Also sync profile with backend if available
       try {
         await apiRequest('/auth/login', {
           method: 'POST',
@@ -121,18 +105,30 @@ export function useAuth() {
       }
 
       setCurrentUser(googleUser);
-      return googleUser;
+      return { ok: true, user: googleUser };
     } catch (err) {
-      setError(err.message || 'Google Sign-In error');
-      return null;
+      const message = err.message || 'Google Sign-In failed';
+      setError(message);
+      return { ok: false, error: message };
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  /**
+   * Completely clean logout (clears Firebase session + localStorage)
+   */
   const logout = useCallback(async () => {
-    await signOutFirebase();
-    setCurrentUser(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.clear();
+      await signOutFirebase();
+    } catch {
+      // Safe ignore
+    } finally {
+      setCurrentUser(null);
+      setError(null);
+    }
   }, []);
 
   const incrementContributions = useCallback(async () => {
@@ -149,7 +145,7 @@ export function useAuth() {
     };
     setCurrentUser(updated);
 
-    if (currentUser.id && !currentUser.id.startsWith('local_') && !currentUser.id.startsWith('google_local_')) {
+    if (currentUser.id && !currentUser.id.startsWith('local_')) {
       try {
         await apiRequest(`/auth/${currentUser.id}/contribute`, { method: 'POST' });
       } catch {

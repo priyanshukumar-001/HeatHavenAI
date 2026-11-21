@@ -37,7 +37,10 @@ export const AuthGate = ({
     setIsSubmitting(true);
     setFormError('');
     try {
-      await loginWithGoogle('commuter');
+      const res = await loginWithGoogle('commuter');
+      if (res && !res.ok) {
+        setFormError(res.error || 'Google Sign-In failed');
+      }
     } catch (err) {
       setFormError(err.message || 'Google Sign-In failed');
     } finally {
