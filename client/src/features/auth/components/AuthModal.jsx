@@ -36,15 +36,17 @@ export const AuthModal = ({
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      // Functional mock Google Auth pre-wired for Google Cloud OAuth client
-      await new Promise((r) => setTimeout(r, 600));
-      await login({
-        name: 'Google User (Verified Contributor)',
-        phoneOrEmail: 'verified.relief.worker@gmail.com',
-        role,
-        provider: 'google',
-        badge: 'Civic Guardian'
-      });
+      if (auth.loginWithGoogle) {
+        await auth.loginWithGoogle(role);
+      } else {
+        await login({
+          name: 'Google User (Verified Contributor)',
+          phoneOrEmail: 'verified.relief.worker@gmail.com',
+          role,
+          provider: 'google',
+          badge: 'Civic Guardian'
+        });
+      }
       onClose();
     } finally {
       setIsGoogleLoading(false);

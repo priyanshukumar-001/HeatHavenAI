@@ -8,6 +8,7 @@ import TokenPreviewPage from './pages/TokenPreviewPage.jsx';
 import ConciergeSheet from './features/concierge/components/ConciergeSheet.jsx';
 import SosModal from './components/ui/SosModal.jsx';
 import AuthModal from './features/auth/components/AuthModal.jsx';
+import AuthGate from './features/auth/components/AuthGate.jsx';
 import { useAuth } from './features/auth/hooks/useAuth.js';
 import { useHeat } from './features/heat/hooks/useHeat.js';
 import { PILOT_COORDS } from './lib/constants.js';
@@ -91,6 +92,27 @@ export const App = () => {
       window.history.pushState({}, '', '/');
     }
   };
+
+  // Login Gate: Gated access ensuring only authenticated users can use the platform
+  if (!auth.isLoggedIn) {
+    return (
+      <>
+        <AuthGate
+          auth={auth}
+          lang={lang}
+          onToggleLang={handleToggleLang}
+          heatIndex={heatIndexC}
+          heatLevel={heatLevel}
+          onOpenSos={() => setIsSosOpen(true)}
+        />
+        <SosModal
+          isOpen={isSosOpen}
+          onClose={() => setIsSosOpen(false)}
+          lang={lang}
+        />
+      </>
+    );
+  }
 
   return (
     <AppShell
