@@ -1,0 +1,114 @@
+:root {
+  /* Modern Clean Canvas & Surfaces (Inspired by high-end delivery & SaaS UI) */
+  --paper: #F8FAFC;         /* Clean slate-50 canvas */
+  --paper-2: #F1F5F9;       /* Sunken containers & subtle chip backgrounds */
+  --card: #FFFFFF;          /* Pure crisp white card surface */
+  --line: #E2E8F0;          /* Clean hairline border */
+  --line-strong: #CBD5E1;   /* Medium separator border */
+
+  /* Razor-sharp high contrast typography */
+  --ink: #0F172A;           /* Slate 900: primary text, ultra-sharp */
+  --ink-2: #334155;         /* Slate 700: secondary descriptive copy */
+  --ink-3: #64748B;         /* Slate 500: metadata, timestamps, units */
+
+  /* Vibrant Categories: Modern High-Energy Accents */
+  --pani: #2563EB;          /* Electric Azure (Drinking Water) */
+  --pani-soft: #EFF6FF;     /* Soft Azure Tint */
+  --pani-strong: #1D4ED8;
+
+  --chhaon: #059669;        /* Vibrant Emerald / Mint (Tree Canopy & Shade) */
+  --chhaon-soft: #ECFDF5;   /* Fresh Mint Tint */
+  --chhaon-strong: #047857;
+
+  --aaram: #D97706;         /* Sunlit Warm Amber (Covered Seating / Rest) */
+  --aaram-soft: #FFFBEB;    /* Soft Amber Tint */
+
+  /* Heat Alert Spectrum */
+  --loo: #DC2626;           /* Vivid Coral Red (Extreme Heat / Danger) */
+  --loo-soft: #FEF2F2;      /* Soft Crimson Tint */
+  --angaar: #991B1B;        /* Deep Extreme Heatwave */
+  --sun: #EAB308;           /* High Caution Yellow */
+  --cool: #10B981;          /* Cool Zone Emerald */
+
+  /* Interactions */
+  --focus: #2563EB;
+  --link: #2563EB;
+
+  /* Executive Control Room / High-Tech Telemetry */
+  --night: #0B0F19;         /* Deep Midnight Slate */
+  --night-2: #111827;       /* Card surface on night mode */
+  --night-card: #1E293B;    /* Elevated tile */
+  --night-line: #334155;    /* Night border */
+  --ember: #F59E0B;         /* Golden Amber Telemetry */
+  --on-night: #F8FAFC;      /* Clean White on Night */
+  --on-night-muted: #94A3B8;
+
+  /* Compatibility Aliases for Tailwind & Existing Code */
+  --blue: var(--pani);
+  --blue-strong: var(--pani-strong);
+  --blue-light: var(--pani-soft);
+  --blue-light-2: #DBEAFE;
+
+  --green: var(--chhaon);
+  --green-text: var(--chhaon-strong);
+  --green-light: var(--chhaon-soft);
+  --green-light-2: #D1FAE5;
+
+  --yellow: var(--aaram);
+  --yellow-light: var(--aaram-soft);
+  --yellow-light-2: #FEF3C7;
+  --amber-text: #B45309;
+
+  --red: var(--loo);
+  --red-text: var(--angaar);
+  --red-light: var(--loo-soft);
+  --red-light-2: #FEE2E2;
+
+  --surface-text: var(--ink);
+  --surface-secondary: var(--ink-2);
+  --surface-muted: var(--ink-3);
+  --surface-border: var(--line);
+  --surface-border-strong: var(--line-strong);
+  --surface-light: var(--paper);
+  --surface-outer: var(--paper-2);
+  --surface-chip: var(--paper-2);
+
+  /* The 6 Modern Gradients */
+  --g-dawn: linear-gradient(135deg, #FEF3C7 0%, #FED7AA 40%, #FEE2E2 75%, #F8FAFC 100%);
+  --g-relief: linear-gradient(135deg, #EFF6FF 0%, #ECFDF5 50%, #FFFFFF 100%);
+  --g-grove: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 60%, #FFFFFF 100%);
+  --g-alert: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);
+  --g-extreme: linear-gradient(90deg, #991B1B 0%, #7F1D1D 100%);
+  --g-thermal: linear-gradient(90deg, #10B981 0%, #EAB308 30%, #F97316 65%, #EF4444 85%, #991B1B 100%);
+
+  /* Legacy gradient aliases */
+  --grad-default: var(--g-relief);
+  --grad-hero: var(--g-dawn);
+  --grad-blue-green: var(--g-relief);
+  --grad-yellow-blue: var(--g-dawn);
+  --grad-red-yellow: var(--g-alert);
+  --grad-green-yellow: var(--g-grove);
+  --grad-topbar: var(--g-thermal);
+
+  /* Spacing Scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* Rounded Geometries */
+  --r-control: 12px;
+  --r-card: 20px;
+  --r-sheet: 28px;
+  --r-pill: 9999px;
+
+  /* Modern Card Elevations */
+  --sh-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --sh-1: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --sh-2: 0 12px 32px -4px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+}

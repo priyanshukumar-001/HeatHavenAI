@@ -1,0 +1,95 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "OSM Public Water Post Sector 18",
+        "amenity": "drinking_water",
+        "category": "water"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.3245, 28.5702] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Noida Authority Bus Shelter Shade",
+        "amenity": "shelter",
+        "category": "shade"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.3278, 28.5689] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Atta Market Tube Well Tap",
+        "amenity": "drinking_water",
+        "category": "water"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.3235, 28.5688] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrestage Mall Covered Sitting",
+        "amenity": "bench",
+        "category": "rest"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.3249, 28.5715] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Noida Sector 16 Metro Free Water Fountain",
+        "amenity": "drinking_water",
+        "category": "water"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.3168, 28.5785] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Film City Gate Public Water Cooler",
+        "amenity": "drinking_water",
+        "category": "water"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.3205, 28.5645] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Connaught Place Central Park Public Water Fountain",
+        "amenity": "drinking_water",
+        "category": "water"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.2188, 28.6335] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Anand Vihar DTC Terminal Water Tap",
+        "amenity": "drinking_water",
+        "category": "water"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.3148, 28.6482] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chandni Chowk Municipal Cold Water Booth",
+        "amenity": "drinking_water",
+        "category": "water"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.2345, 28.6570] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "AIIMS Gate 1 Passenger Rain Basera Shelter",
+        "amenity": "shelter",
+        "category": "shade"
+      },
+      "geometry": { "type": "Point", "coordinates": [77.2105, 28.5668] }
+    }
+  ]
+}

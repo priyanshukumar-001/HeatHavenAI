@@ -1,0 +1,71 @@
+{
+  "chip.all": "सभी राहत",
+  "chip.water": "ठंडा पानी",
+  "chip.shade": "छांव",
+  "chip.rest": "बैठने की जगह",
+
+  "report.ok": "पानी चालू है",
+  "report.dry": "सूखा है",
+  "report.closed": "बंद है",
+  "report.question": "क्या यहाँ पानी/राहत मिल रही है?",
+  "report.success.ok": "रिपोर्ट दर्ज: पानी चालू है! Trust score बढ़ा।",
+  "report.success.other": "रिपोर्ट दर्ज: स्थिति अपडेट हो गई।",
+  "report.error": "रिपोर्ट सबमिट नहीं हो सकी।",
+
+  "trust.verified": "Verified",
+  "trust.check": "Check करो",
+  "trust.likelyClosed": "शायद बंद",
+
+  "freshness.recent": "हाल ही में",
+  "freshness.justNow": "अभी-अभी",
+  "freshness.minAgo": "{min} min पहले verify हुआ",
+  "freshness.hourAgo": "{hr} घंटे पहले verify हुआ",
+  "freshness.dayAgo": "{d} दिन पहले verify हुआ",
+
+  "heat.normal": "सामान्य",
+  "heat.caution": "सावधानी",
+  "heat.danger": "खतरा",
+  "heat.extreme": "अत्यधिक",
+  "heat.alertTitle": "अत्यधिक गर्मी चेतावनी",
+  "heat.alertDesc": "तापमान ख़तरनाक स्तर पर है। तुरंत छांव में जाएँ और पानी पिएँ।",
+
+  "header.map": "नक्शा (Map)",
+  "header.dashboard": "अधिकारी डैशबोर्ड",
+  "header.langToggle": "हिंदी में बदलें",
+
+  "mic.hint": "बोलकर पूछो",
+  "mic.listening": "सुन रहा हूँ... बोलिए",
+
+  "concierge.title": "HeatHaven AI सहायक",
+  "concierge.subtitle": "बोलकर या लिखकर पूछें",
+  "concierge.placeholder": "पास में ठंडा पानी कहाँ है?",
+  "concierge.welcome": "नमस्ते! आपको ठंडा पानी, छांव, या आराम करने की जगह कहाँ चाहिए? बोलकर या लिखकर पूछें।",
+  "concierge.error": "अभी AI बंद है। ये सबसे पास के spots हैं।",
+
+  "spots.nearby": "आसपास के स्पॉट्स ({count})",
+  "spots.empty": "इस क्षेत्र में अभी कोई स्पॉट नहीं। आप पहला जोड़ें।",
+  "spots.back": "सभी स्पॉट्स पर वापस",
+  "spots.directions": "Route दिखाओ (Directions)",
+  "spots.shade.estimate": "छांव अनुमान (धूप अनुसार बदलती है)",
+
+  "sos.title": "हीटस्ट्रोक / लू इमरजेंसी",
+  "sos.subtitle": "तत्काल प्राथमिक उपचार और एम्बुलेंस",
+  "sos.stepsTitle": "4 ज़रूरी कदम (First Aid Steps):",
+  "sos.step1.title": "तुरंत छांव में जाएँ",
+  "sos.step1.desc": "धूप से हटकर किसी ठंडी जगह या पेड़ के नीचे बैठें।",
+  "sos.step2.title": "कपड़े ढीले करें",
+  "sos.step2.desc": "तंग कपड़े ढीले करें और गर्दन-माथे पर ठंडा पानी छिड़कें।",
+  "sos.step3.title": "छोटे घूंट में पानी पिएँ",
+  "sos.step3.desc": "ORS या थोड़ा नमक-पानी पिएँ। बहुत ठंडा पानी एकदम न पिएँ।",
+  "sos.step4.title": "चक्कर या बेहोशी आए तो",
+  "sos.step4.desc": "पैरों को थोड़ा ऊपर उठाकर लेट जाएँ और मदद माँगें।",
+  "sos.call": "108 एम्बुलेंस को कॉल करें (मुफ्त)",
+
+  "dashboard.title": "हीट-गैप निर्णय डैशबोर्ड",
+  "dashboard.subtitle": "गिग वर्कर्स, डिलीवरी राइडर्स और रेहड़ी-पटरी वालों के लिए पानी और छांव की कमी का रियल-टाइम विश्लेषण।",
+  "dashboard.kpi.peakHeat": "अत्यधिक तापमान",
+  "dashboard.kpi.reliefSpots": "कुल राहत स्पॉट्स",
+  "dashboard.kpi.verifiedShare": "सत्यापित अनुपात",
+  "dashboard.kpi.heatDeserts": "हीट डेजर्ट ज़ोन"
+}
+

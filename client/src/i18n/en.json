@@ -1,0 +1,71 @@
+{
+  "chip.all": "All Relief",
+  "chip.water": "Water",
+  "chip.shade": "Shade",
+  "chip.rest": "Rest",
+
+  "report.ok": "Water works",
+  "report.dry": "Dry",
+  "report.closed": "Closed",
+  "report.question": "Is relief available right now?",
+  "report.success.ok": "Report received: Water verified!",
+  "report.success.other": "Report received: Status updated.",
+  "report.error": "Failed to submit report.",
+
+  "trust.verified": "Verified",
+  "trust.check": "Check",
+  "trust.likelyClosed": "Likely closed",
+
+  "freshness.recent": "Recently",
+  "freshness.justNow": "Just now",
+  "freshness.minAgo": "Verified {min}m ago",
+  "freshness.hourAgo": "Verified {hr}h ago",
+  "freshness.dayAgo": "Verified {d}d ago",
+
+  "heat.normal": "Normal",
+  "heat.caution": "Caution",
+  "heat.danger": "Danger",
+  "heat.extreme": "Extreme",
+  "heat.alertTitle": "Extreme Heat Warning",
+  "heat.alertDesc": "Apparent temperature is dangerously high. Seek shade and hydrate immediately.",
+
+  "header.map": "Relief Map",
+  "header.dashboard": "Heat-Gap Dashboard",
+  "header.langToggle": "Switch to Hindi",
+
+  "mic.hint": "Ask by voice",
+  "mic.listening": "Listening... please speak",
+
+  "concierge.title": "HeatHaven AI Concierge",
+  "concierge.subtitle": "Ask by voice or text",
+  "concierge.placeholder": "Where is cold water nearby?",
+  "concierge.welcome": "Hello! Are you looking for drinking water, shade, or a place to rest? Ask by voice or text.",
+  "concierge.error": "AI is offline. Here are the nearest spots.",
+
+  "spots.nearby": "Nearby Spots ({count})",
+  "spots.empty": "No spots here yet. Be the first to add one.",
+  "spots.back": "Back to nearby spots",
+  "spots.directions": "Get Directions",
+  "spots.shade.estimate": "Shade: Solar-angle estimate",
+
+  "sos.title": "Heatstroke Emergency SOS",
+  "sos.subtitle": "Immediate first aid & ambulance call",
+  "sos.stepsTitle": "4 Critical First Aid Steps:",
+  "sos.step1.title": "Move to Shade Immediately",
+  "sos.step1.desc": "Get out of direct sun and sit in a cool or shaded area.",
+  "sos.step2.title": "Loosen Tight Clothing",
+  "sos.step2.desc": "Loosen collar and apply cool water to forehead and neck.",
+  "sos.step3.title": "Sip Water with Electrolytes",
+  "sos.step3.desc": "Drink ORS or salted water in small sips. Avoid gulping ice water.",
+  "sos.step4.title": "If Dizziness Occurs",
+  "sos.step4.desc": "Lie down with feet slightly elevated and call for help.",
+  "sos.call": "Call 108 Ambulance (Toll-Free)",
+
+  "dashboard.title": "Heat-Gap Decision Dashboard",
+  "dashboard.subtitle": "Real-time urban heat desert identification and algorithmic water kiosk deployment for outdoor workers.",
+  "dashboard.kpi.peakHeat": "Peak Apparent Heat",
+  "dashboard.kpi.reliefSpots": "Relief Spots",
+  "dashboard.kpi.verifiedShare": "Verified Share",
+  "dashboard.kpi.heatDeserts": "Heat Deserts"
+}
+
