@@ -3,22 +3,22 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/
 
 /**
  * Firebase Client Configuration
- * Keys are loaded from Vite environment variables (prefixed with VITE_).
- * When keys are not set, a graceful offline fallback handles auth.
+ * Real Project: WanderAI (wanderai-1eb54)
  */
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDiNMnvFX0gS_9ZdwP3jZ1FqGMJiIUzb0Q',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'wanderai-1eb54.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'wanderai-1eb54',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'wanderai-1eb54.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '839625482209',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:839625482209:web:727143706983992c6a7ca0',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-WH0H97BFB3'
 };
 
 export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey &&
-  firebaseConfig.apiKey !== 'your_firebase_api_key' &&
-  firebaseConfig.projectId
+  firebaseConfig.projectId &&
+  firebaseConfig.projectId !== 'your-project-id'
 );
 
 // Initialize Firebase App singleton
@@ -36,9 +36,8 @@ googleProvider.setCustomParameters({
 
 /**
  * Sign in using Firebase Google Auth with popup
- * Falls back cleanly if Firebase keys are not yet configured or on network error.
  *
- * @returns {Promise<{ ok: boolean, user?: object, error?: string, source: 'firebase' | 'simulated' }>}
+ * @returns {Promise<{ ok: boolean, user?: object, error?: string, errorCode?: string }>}
  */
 export async function signInWithGoogleFirebase() {
   if (isFirebaseConfigured && auth) {
@@ -61,17 +60,9 @@ export async function signInWithGoogleFirebase() {
         }
       };
     } catch (err) {
-      // If unauthorized domain (e.g. Render domain not yet added to Firebase authorized domains)
-      // or popup was closed by user
       if (err.code === 'auth/popup-closed-by-user') {
-        return { ok: false, error: 'Sign-in window was closed.' };
+        return { ok: false, error: 'Sign-in window was closed by user.' };
       }
-      if (err.code === 'auth/unauthorized-domain') {
-        console.warn('Firebase auth: domain not yet in Authorized Domains list in Firebase Console. Using demo sign-in.');
-      } else {
-        console.error('Firebase Auth error:', err);
-      }
-      // Return error code so caller can provide simulated fallback or message
       return {
         ok: false,
         errorCode: err.code,
@@ -80,21 +71,9 @@ export async function signInWithGoogleFirebase() {
     }
   }
 
-  // Graceful fallback when Firebase config is missing (for instant preview / offline dev)
   return {
-    ok: true,
-    source: 'simulated',
-    user: {
-      id: `google_sim_${Date.now()}`,
-      name: 'Google Contributor (Demo)',
-      phoneOrEmail: 'contributor.relief@gmail.com',
-      email: 'contributor.relief@gmail.com',
-      photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
-      provider: 'google',
-      badge: 'Verified Google Contributor',
-      contributionsCount: 5,
-      savedSpots: []
-    }
+    ok: false,
+    error: 'Firebase is not initialized.'
   };
 }
 
