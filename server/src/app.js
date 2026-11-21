@@ -1,5 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { ENV } from './config/env.js';
 import spotsRouter from './routes/spots.routes.js';
 import aiRouter from './routes/ai.routes.js';
@@ -9,11 +12,15 @@ import { adminRouter } from './routes/admin.routes.js';
 import { isDbConnected } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
+
 export const app = express();
 
-// Security and CORS configuration
+// Security and CORS configuration (Support Render, Vercel, and local development)
 app.use(cors({
-  origin: [ENV.CLIENT_ORIGIN, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: true,
   credentials: true
 }));
 
@@ -39,7 +46,18 @@ app.use('/api/analytics', analyticsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 
-// 404 Handler
+// Serve Static Frontend Assets in Production (Fullstack Single-Instance on Render/Vercel)
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
+// 404 Handler for API requests
 app.use((req, res) => {
   res.status(404).json({
     error: {
