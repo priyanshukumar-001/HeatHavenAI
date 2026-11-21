@@ -3,7 +3,7 @@ import { getNearbySpots } from './spotService.js';
 import { cache } from '../utils/cache.js';
 
 /**
- * Handle user concierge query through Gemini + geo query pipeline with 10m caching
+ * Handle user concierge query through Gemini + geo query pipeline with smart caching
  * @param {Object} params
  * @param {string} params.query
  * @param {number} params.lat
@@ -12,53 +12,62 @@ import { cache } from '../utils/cache.js';
  * @returns {Promise<{ intent: string, reply: string, spots: Array, source: 'gemini' | 'template' }>}
  */
 export async function processConciergeQuery({ query, lat, lng, lang = 'hi' }) {
-  // 1. Extract Intent (AI or Keyword Fallback)
+  // 1. Extract Intent
   const intent = await extractIntent(query);
 
-  // 2. Compute 500m Grid Cell Key for Caching (SPEC Section 5.6)
+  const isReliefSpotQuery = ['water', 'shade', 'rest'].includes(intent);
+
+  // 2. Compute Cache Key (Only cache spot lookups by normalized query + grid cell)
   const cellLat = (Math.round(lat * 200) / 200).toFixed(3);
   const cellLng = (Math.round(lng * 200) / 200).toFixed(3);
-  const cacheKey = `concierge_${intent}_${cellLat}_${cellLng}_${lang}`;
+  const normalizedQuery = query.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  const cacheKey = isReliefSpotQuery
+    ? `concierge_${intent}_${normalizedQuery}_${cellLat}_${cellLng}_${lang}`
+    : null;
 
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return { ...cached, isCached: true };
+  if (cacheKey) {
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return { ...cached, isCached: true };
+    }
   }
 
-  // 3. Geo Query: Check local 2000m radius, fallback to wider 50km radius if needed
+  // 3. Geo Query: Only query spots if user is actually looking for relief spots!
   let topSpots = [];
-  try {
-    let nearbyData = await getNearbySpots({
-      lat,
-      lng,
-      radius: 2000,
-      category: intent
-    });
-
-    topSpots = (nearbyData.spots || []).slice(0, 3);
-
-    // If no spots within 2km, search wider area (e.g. Kanpur or outer NCR)
-    if (topSpots.length === 0) {
-      nearbyData = await getNearbySpots({
+  if (isReliefSpotQuery) {
+    try {
+      let nearbyData = await getNearbySpots({
         lat,
         lng,
-        radius: 50000,
+        radius: 2000,
         category: intent
       });
-      topSpots = (nearbyData.spots || []).slice(0, 3);
-    }
 
-    // If still none in category, search any category
-    if (topSpots.length === 0) {
-      nearbyData = await getNearbySpots({
-        lat,
-        lng,
-        radius: 50000
-      });
       topSpots = (nearbyData.spots || []).slice(0, 3);
+
+      // If no spots within 2km, search wider area (e.g. outer NCR)
+      if (topSpots.length === 0) {
+        nearbyData = await getNearbySpots({
+          lat,
+          lng,
+          radius: 50000,
+          category: intent
+        });
+        topSpots = (nearbyData.spots || []).slice(0, 3);
+      }
+
+      // If still none in category, search any category
+      if (topSpots.length === 0) {
+        nearbyData = await getNearbySpots({
+          lat,
+          lng,
+          radius: 50000
+        });
+        topSpots = (nearbyData.spots || []).slice(0, 3);
+      }
+    } catch {
+      topSpots = [];
     }
-  } catch {
-    topSpots = [];
   }
 
   // 4. Generate Short Hindi/English Reply using Gemini
@@ -76,8 +85,10 @@ export async function processConciergeQuery({ query, lat, lng, lang = 'hi' }) {
     source: replyData.source
   };
 
-  // Cache for 10 minutes
-  cache.set(cacheKey, result, 10);
+  // Cache spot results for 10 minutes
+  if (cacheKey) {
+    cache.set(cacheKey, result, 10);
+  }
 
   return result;
 }

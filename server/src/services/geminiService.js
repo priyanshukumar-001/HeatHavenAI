@@ -17,23 +17,58 @@ function getAiClient() {
 /**
  * Keyword-based fallback for intent extraction when AI is offline
  * @param {string} query 
- * @returns {'water' | 'shade' | 'rest'}
+ * @returns {'water' | 'shade' | 'rest' | 'capability' | 'safety_advice' | 'emergency_sos' | 'general_chat'}
  */
 export function extractFallbackIntent(query = '') {
   const q = query.toLowerCase();
-  if (q.includes('chhaon') || q.includes('chhao') || q.includes('shade') || q.includes('dhoop') || q.includes('tree') || q.includes('ped')) {
+
+  // Emergency / Distress
+  if (q.includes('sos') || q.includes('ambulance') || q.includes('emergency') || q.includes('behos') || q.includes('unconscious') || q.includes('108') || q.includes('heart') || q.includes('chhati')) {
+    return 'emergency_sos';
+  }
+
+  // Capability & Introductions
+  if (q.includes('what can you do') || q.includes('what can u do') || q.includes('who are you') || q.includes('features') || q.includes('help me') || q.includes('kya kar sakte') || q.includes('kaun ho') || q.includes('capabilities') || q.includes('commands')) {
+    return 'capability';
+  }
+
+  // Heat Safety & Medical/Hydration tips
+  if (q.includes('ors') || q.includes('safety') || q.includes('dizziness') || q.includes('chakkar') || q.includes('cramps') || q.includes('doctor') || q.includes('prevent') || q.includes('symptom') || q.includes('precautions') || q.includes('bache')) {
+    return 'safety_advice';
+  }
+
+  // Weather / Temperature
+  if (q.includes('temperature') || q.includes('how hot') || q.includes('kitni garmi') || q.includes('mausam') || q.includes('weather') || q.includes('aqi') || q.includes('uv index')) {
+    return 'weather_heat';
+  }
+
+  // Shade
+  if (q.includes('chhaon') || q.includes('chhao') || q.includes('shade') || q.includes('dhoop') || q.includes('tree') || q.includes('ped') || q.includes('shelter') || q.includes('canopy')) {
     return 'shade';
   }
-  if (q.includes('baith') || q.includes('rest') || q.includes('seat') || q.includes('bench') || q.includes('thak') || q.includes('aaram')) {
+
+  // Rest
+  if (q.includes('baith') || q.includes('rest') || q.includes('seat') || q.includes('bench') || q.includes('thak') || q.includes('aaram') || q.includes('relax')) {
     return 'rest';
   }
+
+  // Water
+  if (q.includes('pani') || q.includes('paani') || q.includes('water') || q.includes('pyas') || q.includes('chilled') || q.includes('matka') || q.includes('tap') || q.includes('drink') || q.includes('peena')) {
+    return 'water';
+  }
+
+  // Greeting
+  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('namaste') || q.includes('pranam') || q.includes('good morning') || q.includes('good afternoon')) {
+    return 'general_chat';
+  }
+
   return 'water';
 }
 
 /**
- * Extract user relief intent using Gemini API or keyword fallback
+ * Extract user intent using Gemini API or keyword fallback
  * @param {string} query 
- * @returns {Promise<'water' | 'shade' | 'rest'>}
+ * @returns {Promise<'water' | 'shade' | 'rest' | 'capability' | 'safety_advice' | 'emergency_sos' | 'weather_heat' | 'general_chat'>}
  */
 export async function extractIntent(query) {
   const client = getAiClient();
@@ -42,9 +77,19 @@ export async function extractIntent(query) {
   }
 
   try {
-    const prompt = `Classify this user request into exactly one category: "water", "shade", or "rest".
-User request: "${query}"
-Respond ONLY with a JSON object: {"intent": "water" | "shade" | "rest"}`;
+    const prompt = `Classify this user request into exactly one category:
+- "water": Asking for drinking water, cold water, water kiosk, matka, or tap.
+- "shade": Asking for shade, tree canopies, bus stop shelter, escaping direct sun.
+- "rest": Asking for a place to sit, benches, cooling rest zones, tired/taking a break.
+- "capability": Asking what the AI can do, what features exist, who you are, or how to use the app.
+- "safety_advice": Asking for heat safety tips, hydration guidance, ORS recipe, medical symptoms, heat stroke prevention.
+- "emergency_sos": Medical emergency, fainting, heat stroke, ambulance, 108.
+- "weather_heat": Asking about current temperature, heat levels, heat wave alerts, weather forecast.
+- "general_chat": Greetings, pleasantries, questions about life, thank you.
+
+User query: "${query}"
+
+Respond ONLY with a JSON object: {"intent": "water" | "shade" | "rest" | "capability" | "safety_advice" | "emergency_sos" | "weather_heat" | "general_chat"}`;
 
     const response = await client.models.generateContent({
       model: ENV.GEMINI_MODEL,
@@ -55,7 +100,8 @@ Respond ONLY with a JSON object: {"intent": "water" | "shade" | "rest"}`;
     });
 
     const parsed = JSON.parse(response.text.trim());
-    if (['water', 'shade', 'rest'].includes(parsed.intent)) {
+    const validIntents = ['water', 'shade', 'rest', 'capability', 'safety_advice', 'emergency_sos', 'weather_heat', 'general_chat'];
+    if (validIntents.includes(parsed.intent)) {
       return parsed.intent;
     }
     return extractFallbackIntent(query);
@@ -79,33 +125,59 @@ export async function generateConciergeReply({ query, intent, spots = [], lang =
   // If no Gemini client, use deterministic template reply
   if (!client) {
     return {
-      reply: formatTemplateReply({ intent, spots, lang }),
+      reply: formatTemplateReply({ intent, spots, lang, query }),
       source: 'template'
     };
   }
 
   try {
-    const spotSummaries = spots.length > 0
-      ? spots.slice(0, 3).map((s) => `${s.name} (${s.distanceM}m away, trust: ${s.trustScore}/100)`).join(', ')
-      : 'None nearby within walking radius.';
+    const isReliefQuery = ['water', 'shade', 'rest'].includes(intent);
+    const spotSummaries = (spots && spots.length > 0)
+      ? spots.slice(0, 3).map((s) => `• ${s.name} (${s.distanceM}m away, Category: ${s.category}, Trust: ${s.trustScore}/100)`).join('\n')
+      : 'None nearby in current walking radius.';
 
-    const systemPrompt = `You are HeatHaven AI, a helpful, respectful, and empathetic emergency heat relief assistant for outdoor workers and citizens navigating extreme summer heat in Delhi-NCR and Kanpur, India.
-User language: ${lang === 'hi' ? 'conversational Hindi/Hinglish' : 'English'}.
-Keep the reply concise (max 2 short sentences).
-${spots.length > 0 ? `Nearby verified spots: ${spotSummaries}. Mention the closest spot and distance clearly.` : 'If no spots are nearby or user is just saying hello/asking general questions, politely greet them and ask if they are looking for drinking water, shade, or a place to rest.'}
-User asked: "${query}"`;
+    const systemPrompt = `You are HeatHaven AI, an intelligent, empathetic, and proactive real-time urban heat relief concierge for outdoor workers (Zomato/Swiggy riders, street vendors, laborers) and daily commuters in Delhi-NCR, India.
+
+User query: "${query}"
+Intent: ${intent}
+Language: ${lang === 'hi' ? 'conversational Hindi/Hinglish (Devanagari or Romanized according to what user typed)' : 'clear, concise English'}.
+
+Response Guidelines:
+1. If the user asks what you can do ("what can you do", "who are you", "help", "features"):
+   - Clearly and warmly explain your core capabilities in 3-4 bullet points:
+     • 💧 Real-time chilled drinking water & matka kiosks locator
+     • 🌳 High-shade corridors & tree canopies to escape extreme sun
+     • 🪑 Public rest benches & cooling waiting areas
+     • 🚑 1-Tap Heatstroke Emergency SOS (108 Helpline)
+     • ☀️ Live Heat Index & personalized hydration tips
+   - Invite them to ask: "Paas mein thanda paani kahan hai?" or "Shade spot batao".
+   - DO NOT claim to show a cooling spot when they asked about capabilities.
+
+2. If the user is asking for drinking water, shade, or rest:
+   - Nearby verified spots available:
+${spotSummaries}
+   - Clearly name the closest spot and state its exact distance in meters.
+   - Keep it concise (2-3 sentences max) with practical walking guidance.
+
+3. If the user asks for heat safety, ORS, heat exhaustion, or health precautions:
+   - Provide medically sound advice: drinking 250ml water every 20-30 min, ORS preparation, taking shade breaks between 12-4 PM, and recognizing heat exhaustion symptoms.
+
+4. If user greets or says hello:
+   - Reply warmly, ask how they are holding up in the heat, and ask if they need drinking water, shade, or a place to rest right now.
+
+5. Tone: Respectful, helpful, proactive, and natural. NEVER repeat robotic boilerplate sentences.`;
 
     const response = await client.models.generateContent({
       model: ENV.GEMINI_MODEL,
       contents: systemPrompt
     });
 
-    const reply = response.text ? response.text.trim() : formatTemplateReply({ intent, spots, lang });
+    const reply = response.text ? response.text.trim() : formatTemplateReply({ intent, spots, lang, query });
     return { reply, source: 'gemini' };
   } catch (err) {
-    console.error('generateConciergeReply catch error:', err?.message || err);
+    console.error('generateConciergeReply error:', err?.message || err);
     return {
-      reply: formatTemplateReply({ intent, spots, lang }),
+      reply: formatTemplateReply({ intent, spots, lang, query }),
       source: 'template'
     };
   }
@@ -113,13 +185,6 @@ User asked: "${query}"`;
 
 /**
  * Generate personalized heat safety advice using Gemini AI or deterministic fallback
- * @param {Object} params
- * @param {number} params.temp - Current apparent temperature in °C
- * @param {number} params.humidity - Relative humidity percentage
- * @param {string} [params.role='outdoor_worker'] - Worker role
- * @param {string} [params.location='Delhi NCR'] - Location name
- * @param {'hi' | 'en'} [params.lang='en'] - Response language
- * @returns {Promise<{ advice: string, riskLevel: string, source: 'gemini' | 'fallback' }>}
  */
 export async function getAIHeatAdvisor({ temp = 42, humidity = 30, role = 'outdoor_worker', location = 'Delhi NCR', lang = 'en' }) {
   const riskLevel = temp >= 46 ? 'extreme' : temp >= 42 ? 'danger' : temp >= 38 ? 'warning' : 'moderate';
@@ -183,7 +248,31 @@ function getHeatAdvisorFallback({ temp, riskLevel, lang }) {
 /**
  * Generate deterministic template reply (SPEC Section 5.6)
  */
-export function formatTemplateReply({ intent, spots = [], lang = 'hi' }) {
+export function formatTemplateReply({ intent, spots = [], lang = 'hi', query = '' }) {
+  if (intent === 'capability') {
+    return lang === 'hi'
+      ? 'मैं HeatHaven AI हूँ! मैं आपको नज़दीकी ठंडा पानी, पेड़ की छांव, बैठने की जगह, और हीटवेव एडवाइज़री प्रदान कर सकता हूँ। पूछिए: "पास में पानी कहाँ है?"'
+      : 'I am HeatHaven AI! I help you find nearby drinking water kiosks, tree shade, resting benches, and heatwave safety advisories. Ask: "Where is cold water near me?"';
+  }
+
+  if (intent === 'safety_advice') {
+    return lang === 'hi'
+      ? 'गर्मी से बचाव के लिए हर 20-30 मिनट में पानी या ORS पिएं। दोपहर 12 से 4 बजे सीधी धूप से बचें और सिर ढककर रखें।'
+      : 'Stay protected: Drink water or ORS every 20-30 minutes, avoid direct sun between 12-4 PM, and keep your head covered.';
+  }
+
+  if (intent === 'emergency_sos') {
+    return lang === 'hi'
+      ? '🚨 आपातकालीन स्थिति: यदि किसी को चक्कर या बेहोशी आ रही है, तो तुरंत 108 एम्बुलेंस पर कॉल करें और उन्हें छांव में लिटाएं।'
+      : '🚨 Emergency: If someone has severe heat stroke or dizziness, call 108 immediately and move them into deep shade.';
+  }
+
+  if (intent === 'general_chat') {
+    return lang === 'hi'
+      ? 'नमस्ते! मैं आपकी क्या सहायता कर सकता हूँ? क्या आपको ठंडा पानी, छांव या बैठने की जगह चाहिए?'
+      : 'Hello! How can I help you today? Are you looking for drinking water, tree shade, or a resting spot?';
+  }
+
   if (spots.length === 0) {
     return lang === 'hi'
       ? 'माफ़ कीजिए, आपके नज़दीक अभी कोई वेरीफाइड स्पॉट नहीं मिला।'
