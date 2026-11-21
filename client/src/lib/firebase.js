@@ -2,17 +2,24 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 /**
- * Hardcoded verified WanderAI Firebase Configuration
- * Guarantees zero missing env variable issues on both Localhost and Render.
+ * Verified WanderAI Firebase Configuration
+ * Bulletproof protection: ignores any placeholder string like 'your-project-id'
  */
+const rawApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+const rawAuthDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
+const rawProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+const rawAppId = import.meta.env.VITE_FIREBASE_APP_ID;
+
+const isValidKey = (val) => Boolean(val && !val.includes('your_') && !val.includes('your-') && val.trim().length > 5);
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDiNMnvFX0gS_9ZdwP3jZ1FqGMJiIUzb0Q',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'wanderai-1eb54.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'wanderai-1eb54',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'wanderai-1eb54.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '839625482209',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:839625482209:web:727143706983992c6a7ca0',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-WH0H97BFB3'
+  apiKey: isValidKey(rawApiKey) ? rawApiKey : 'AIzaSyDiNMnvFX0gS_9ZdwP3jZ1FqGMJiIUzb0Q',
+  authDomain: isValidKey(rawAuthDomain) ? rawAuthDomain : 'wanderai-1eb54.firebaseapp.com',
+  projectId: isValidKey(rawProjectId) ? rawProjectId : 'wanderai-1eb54',
+  storageBucket: 'wanderai-1eb54.firebasestorage.app',
+  messagingSenderId: '839625482209',
+  appId: isValidKey(rawAppId) ? rawAppId : '1:839625482209:web:727143706983992c6a7ca0',
+  measurementId: 'G-WH0H97BFB3'
 };
 
 export const isFirebaseConfigured = true;
@@ -57,7 +64,7 @@ export const googleProvider = initial.provider || null;
 
 /**
  * Sign in using Firebase Google Auth with popup
- * Uses user's real Chrome Google account.
+ * Uses user's real Chrome Google account with WanderAI.
  *
  * @returns {Promise<{ ok: boolean, user?: object, error?: string, errorCode?: string }>}
  */
