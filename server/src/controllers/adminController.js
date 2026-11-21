@@ -1,5 +1,6 @@
 import { Spot } from '../models/Spot.js';
 import { isDbConnected } from '../config/db.js';
+import { addSpotToInMemory } from '../services/spotService.js';
 import { z } from 'zod';
 
 // In-memory municipal emergency broadcast store
@@ -147,34 +148,72 @@ export async function createOfficialSpot(req, res, next) {
   try {
     const data = createSpotSchema.parse(req.body);
 
+    const formattedInMemorySpot = {
+      _id: `official_${Date.now()}`,
+      name: data.name,
+      category: data.category,
+      location: {
+        type: 'Point',
+        coordinates: [data.lng, data.lat],
+        lat: data.lat,
+        lng: data.lng
+      },
+      source: data.source || 'municipal_official',
+      trustScore: 98,
+      status: 'verified',
+      aiVerified: true,
+      reportCounts: { ok: 10, dry: 0, closed: 0 },
+      isSimulated: false,
+      createdAt: new Date().toISOString(),
+      lastVerifiedAt: new Date().toISOString()
+    };
+
+    // Store in live memory so all nearby and search queries immediately include it
+    addSpotToInMemory(formattedInMemorySpot);
+
     if (isDbConnected()) {
-      const created = await Spot.create({
-        name: data.name,
-        category: data.category,
-        location: {
-          type: 'Point',
-          coordinates: [data.lng, data.lat]
-        },
-        source: data.source,
-        trustScore: 98,
-        status: 'verified',
-        aiVerified: true,
-        reportCounts: { ok: 10, dry: 0, closed: 0 },
-        lastVerifiedAt: new Date()
-      });
-      return res.status(201).json({ spot: created });
+      try {
+        const created = await Spot.create({
+          name: data.name,
+          category: data.category,
+          location: {
+            type: 'Point',
+            coordinates: [data.lng, data.lat]
+          },
+          source: data.source || 'municipal_official',
+          trustScore: 98,
+          status: 'verified',
+          aiVerified: true,
+          reportCounts: { ok: 10, dry: 0, closed: 0 },
+          isSimulated: false,
+          lastVerifiedAt: new Date()
+        });
+        return res.status(201).json({
+          spot: {
+            id: created._id.toString(),
+            name: created.name,
+            category: created.category,
+            location: { lat: data.lat, lng: data.lng },
+            trustScore: created.trustScore,
+            status: created.status,
+            lastVerifiedAt: created.lastVerifiedAt
+          }
+        });
+      } catch (dbErr) {
+        console.warn('MongoDB Spot save fallback to memory:', dbErr.message);
+      }
     }
 
     // In-memory response
     res.status(201).json({
       spot: {
-        id: `official_${Date.now()}`,
-        name: data.name,
-        category: data.category,
+        id: formattedInMemorySpot._id,
+        name: formattedInMemorySpot.name,
+        category: formattedInMemorySpot.category,
         location: { lat: data.lat, lng: data.lng },
         trustScore: 98,
         status: 'verified',
-        lastVerifiedAt: new Date().toISOString()
+        lastVerifiedAt: formattedInMemorySpot.lastVerifiedAt
       }
     });
   } catch (err) {

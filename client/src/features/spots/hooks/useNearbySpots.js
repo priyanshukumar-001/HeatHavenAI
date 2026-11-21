@@ -41,11 +41,36 @@ export function useNearbySpots({ lat = PILOT_COORDS.LAT, lng = PILOT_COORDS.LNG,
     setError(null);
     try {
       const data = await fetchNearbySpots({ lat, lng, radius: 25000, category });
-      if (data && data.spots && data.spots.length > 0) {
-        setSpots(data.spots);
-      } else {
-        setSpots(getFilteredFallback());
+      let combined = (data && data.spots && data.spots.length > 0)
+        ? [...data.spots]
+        : getFilteredFallback();
+
+      // Read any newly registered admin spots from local storage
+      try {
+        const stored = localStorage.getItem('hh_custom_spots');
+        if (stored) {
+          const customSpots = JSON.parse(stored);
+          const customWithDist = customSpots
+            .filter((cs) => !category || category === 'all' || cs.category === category)
+            .map((cs) => ({
+              ...cs,
+              distanceM: calculateDistanceM(lat, lng, cs.location.lat, cs.location.lng)
+            }));
+          
+          const existingIds = new Set(combined.map((s) => s.id));
+          customWithDist.forEach((cs) => {
+            if (!existingIds.has(cs.id)) {
+              combined.unshift(cs);
+            }
+          });
+        }
+      } catch {
+        // Safe ignore
       }
+
+      combined.sort((a, b) => a.distanceM - b.distanceM);
+      setSpots(combined);
+
       if (data && data.heat) {
         setHeat(data.heat);
       }
@@ -59,6 +84,15 @@ export function useNearbySpots({ lat = PILOT_COORDS.LAT, lng = PILOT_COORDS.LNG,
 
   useEffect(() => {
     loadSpots();
+
+    // Listen to live spot registered events from Admin Panel
+    const handleSpotAdded = () => {
+      loadSpots();
+    };
+    window.addEventListener('heathaven_spot_added', handleSpotAdded);
+    return () => {
+      window.removeEventListener('heathaven_spot_added', handleSpotAdded);
+    };
   }, [loadSpots]);
 
   return {

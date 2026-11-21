@@ -114,4 +114,12 @@ export async function getNearbySpots({ lat, lng, radius = GEO_LIMITS.DEFAULT_RAD
   return { heat, spots: spotsWithDistance };
 }
 
-export default { getNearbySpots };
+/**
+ * Add a newly registered spot into in-memory store
+ */
+export function addSpotToInMemory(spot) {
+  inMemorySpots.unshift(spot);
+  return spot;
+}
+
+export default { getNearbySpots, addSpotToInMemory };
