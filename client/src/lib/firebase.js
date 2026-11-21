@@ -2,8 +2,8 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 /**
- * Firebase Client Configuration
- * Real Project: WanderAI (wanderai-1eb54)
+ * Hardcoded verified WanderAI Firebase Configuration
+ * Guarantees zero missing env variable issues on both Localhost and Render.
  */
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDiNMnvFX0gS_9ZdwP3jZ1FqGMJiIUzb0Q',
@@ -15,41 +15,63 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-WH0H97BFB3'
 };
 
-export const isFirebaseConfigured = Boolean(
-  firebaseConfig.apiKey &&
-  firebaseConfig.projectId &&
-  firebaseConfig.projectId !== 'your-project-id'
-);
+export const isFirebaseConfigured = true;
 
-// Initialize Firebase App singleton
-export const app = isFirebaseConfigured
-  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
-  : null;
+let firebaseApp = null;
+let firebaseAuth = null;
+let googleAuthProvider = null;
 
-export const auth = app ? getAuth(app) : null;
-export const googleProvider = new GoogleAuthProvider();
+/**
+ * Get or initialize Firebase Auth instance safely
+ */
+export function getFirebaseAuth() {
+  if (firebaseAuth) {
+    return { auth: firebaseAuth, provider: googleAuthProvider };
+  }
 
-// Customize Google Provider prompt so user can pick their Chrome Gmail account
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-});
+  try {
+    if (getApps().length === 0) {
+      firebaseApp = initializeApp(firebaseConfig);
+    } else {
+      firebaseApp = getApp();
+    }
+
+    firebaseAuth = getAuth(firebaseApp);
+    googleAuthProvider = new GoogleAuthProvider();
+    googleAuthProvider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
+    return { auth: firebaseAuth, provider: googleAuthProvider };
+  } catch (err) {
+    console.error('Firebase Initialization Error:', err);
+    return { error: err.message };
+  }
+}
+
+// Initial eager attempt
+const initial = getFirebaseAuth();
+export const app = firebaseApp;
+export const auth = initial.auth || null;
+export const googleProvider = initial.provider || null;
 
 /**
  * Sign in using Firebase Google Auth with popup
- * No fake fallbacks: uses REAL Chrome Google account.
+ * Uses user's real Chrome Google account.
  *
  * @returns {Promise<{ ok: boolean, user?: object, error?: string, errorCode?: string }>}
  */
 export async function signInWithGoogleFirebase() {
-  if (!isFirebaseConfigured || !auth) {
+  const instance = getFirebaseAuth();
+  if (instance.error || !instance.auth) {
     return {
       ok: false,
-      error: 'Firebase is not initialized. Please verify your Firebase project keys.'
+      error: `Firebase Init Error: ${instance.error || 'Auth instance not available'}`
     };
   }
 
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    const result = await signInWithPopup(instance.auth, instance.provider);
     const fbUser = result.user;
     return {
       ok: true,
@@ -67,18 +89,18 @@ export async function signInWithGoogleFirebase() {
       }
     };
   } catch (err) {
-    console.error('Firebase Auth Exception:', err);
+    console.error('Firebase Auth Popup Exception:', err);
 
     let friendlyMessage = err.message || 'Google Sign-In failed';
     if (err.code === 'auth/popup-closed-by-user') {
       friendlyMessage = 'Google Sign-In window was closed before finishing.';
     } else if (err.code === 'auth/popup-blocked') {
-      friendlyMessage = 'Google popup was blocked by your browser. Please allow popups for this site.';
+      friendlyMessage = 'Google popup was blocked by your browser. Please allow popups in your Chrome address bar.';
     } else if (err.code === 'auth/operation-not-allowed') {
-      friendlyMessage = 'Google Sign-In is disabled in your Firebase Console. Go to Firebase Console > Authentication > Sign-in method, click Google, and click Enable & Save.';
+      friendlyMessage = 'Google provider is not enabled in Firebase. Go to Firebase Console > Authentication > Sign-in method > Google > Enable & Save.';
     } else if (err.code === 'auth/unauthorized-domain') {
-      const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'your domain';
-      friendlyMessage = `Domain "${currentHost}" is not authorized. Please add "${currentHost}" to Firebase Console > Authentication > Settings > Authorized domains.`;
+      const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'domain';
+      friendlyMessage = `Domain "${currentHost}" is not authorized. Go to Firebase Console > Authentication > Settings > Authorized domains and add "${currentHost}".`;
     }
 
     return {
@@ -93,9 +115,10 @@ export async function signInWithGoogleFirebase() {
  * Sign out of Firebase session
  */
 export async function signOutFirebase() {
-  if (auth) {
+  const instance = getFirebaseAuth();
+  if (instance.auth) {
     try {
-      await signOut(auth);
+      await signOut(instance.auth);
     } catch {
       // Ignore
     }
