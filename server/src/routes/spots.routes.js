@@ -14,13 +14,11 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-// GET /api/spots/nearby
-router.get('/nearby', validate(nearbyQuerySchema, 'query'), handleGetNearby);
 
-// POST /api/spots/:id/report (SPEC Section 5.3 & 5.5)
+router.get('/nearby', validate(nearbyQuerySchema, 'query'), handleGetNearby);
 router.post('/:id/report', validate(reportBodySchema, 'body'), handlePostReport);
 
-// POST /api/spots/verify-photo (SPEC Section 5.3 & Phase 7)
+
 router.post('/verify-photo', upload.single('photo'), async (req, res, next) => {
   try {
     const { spotId } = req.body;
